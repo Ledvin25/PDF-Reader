@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
 import "./ChatHeader.css";
 
-// Header del chat: muestra el título, estado online y botón limpiar
-const ChatHeader = ({ title, onClearChat, hasMessages }) => {
+// Header del chat: muestra el título, estado online y botón limpiar y exportar
+const ChatHeader = ({ title, onClearChat, hasMessages, onExportConversation }) => {
   // Estado para saber si el backend está online
   const [online, setOnline] = useState(true);
 
@@ -29,6 +29,11 @@ const ChatHeader = ({ title, onClearChat, hasMessages }) => {
     }
   };
 
+  // Handler para exportar conversación
+  const handleExportClick = () => {
+    if (onExportConversation) onExportConversation();
+  };
+
   return (
     <header className="chat-header">
       <div className="header-content">
@@ -41,6 +46,19 @@ const ChatHeader = ({ title, onClearChat, hasMessages }) => {
             {online ? "En línea" : "Fuera de línea"}
           </span>
         </div>
+        {/* Botón exportar conversación */}
+        <button
+          className="export-button"
+          onClick={handleExportClick}
+          disabled={!hasMessages}
+          title="Exportar conversación"
+          aria-label="Exportar conversación"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M12 16V4M12 16l-4-4M12 16l4-4" />
+            <rect x="4" y="18" width="16" height="2" rx="1" />
+          </svg>
+        </button>
         {/* Botón limpiar conversación */}
         <button
           className="clear-button"

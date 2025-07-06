@@ -71,6 +71,29 @@
   outline-offset: 2px;
 }
 
+.export-button {
+  background: #f3f4f6;
+  color: #16a34a;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.7rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.export-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.export-button:hover:not(:disabled) {
+  background: #bbf7d0;
+  color: #0e5c2c;
+}
+
 @media (max-width: 768px) {
   .chat-header {
     padding: 1rem;
