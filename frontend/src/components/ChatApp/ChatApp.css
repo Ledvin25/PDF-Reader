@@ -1,0 +1,15 @@
+.chat-app {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+  .chat-app {
+    height: 100vh;
+  }
+}
