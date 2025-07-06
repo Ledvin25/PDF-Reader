@@ -5,6 +5,8 @@ from pdf_loader import load_pdf
 from chat_handler import chat_stream
 from models import ChatRequest
 from fastapi.middleware.cors import CORSMiddleware
+from time import time
+from collections import defaultdict
 
 app = FastAPI()
 
@@ -71,11 +73,30 @@ async def health():
 
     return JSONResponse(status_code=code, content={"status": status_val, "details": details})
 
+# --- Rate limiting simple por IP ---
+RATE_LIMIT = 2  # requests por minuto
+RATE_LIMIT_WINDOW = 30  # segundos
+_rate_limit_data = defaultdict(list)  # ip -> [timestamps]
+
+def is_rate_limited(ip: str) -> bool:
+    now = time()
+    window_start = now - RATE_LIMIT_WINDOW
+    timestamps = _rate_limit_data[ip]
+    # Eliminar timestamps fuera de la ventana
+    _rate_limit_data[ip] = [ts for ts in timestamps if ts > window_start]
+    if len(_rate_limit_data[ip]) >= RATE_LIMIT:
+        return True
+    _rate_limit_data[ip].append(now)
+    return False
+
 # --- Endpoint principal de chat (streaming) ---
 @app.post("/chat", response_model=dict, tags=["Chat"])
-async def chat_endpoint(request: ChatRequest):
+async def chat_endpoint(request: Request, chat_req: ChatRequest):
+    client_ip = request.client.host
+    if is_rate_limited(client_ip):
+        raise HTTPException(status_code=429, detail="Rate limit exceeded. Intenta de nuevo en un minuto.")
     try:
-        return await chat_stream(request)
+        return await chat_stream(chat_req)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error en chat: {str(e)}")
 
