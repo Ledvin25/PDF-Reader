@@ -21,3 +21,18 @@
 .close-btn:hover {
   color: #7f1d1d;
 }
+.retry-btn {
+  background: #fff1f2;
+  border: 1px solid #fca5a5;
+  color: #b91c1c;
+  border-radius: 5px;
+  padding: 0.2rem 0.8rem;
+  font-size: 1rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.retry-btn:hover {
+  background: #fca5a5;
+  color: #fff;
+}

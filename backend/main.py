@@ -73,9 +73,9 @@ async def health():
 
     return JSONResponse(status_code=code, content={"status": status_val, "details": details})
 
-# --- Rate limiting simple por IP ---
-RATE_LIMIT = 2  # requests por minuto
-RATE_LIMIT_WINDOW = 30  # segundos
+# --- Rate limiting simple por IP (4 requests por minuto para pruebas) ---
+RATE_LIMIT = 4  # requests por minuto
+RATE_LIMIT_WINDOW = 60  # segundos
 _rate_limit_data = defaultdict(list)  # ip -> [timestamps]
 
 def is_rate_limited(ip: str) -> bool:

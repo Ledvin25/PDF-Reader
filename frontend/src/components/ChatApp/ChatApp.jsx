@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import ChatHeader from "../ChatHeader/ChatHeader";
 import MessagesList from "../MessagesList/MessagesList";
 import ChatInput from "../ChatInput/ChatInput";
@@ -18,6 +18,9 @@ const ChatApp = ({
   // Estado local para tokens/costo acumulativo
   const [tokenStats, setTokenStats] = useState({ tokens: 0, cost: 0 });
   const [error, setError] = useState(null);
+  // Nuevo: guardar el último mensaje pendiente de reintento
+  const lastMessageRef = useRef(null);
+  const [retrying, setRetrying] = useState(false);
 
   // Callback para acumular tokens/costo
   const handleUsageUpdate = ({ tokens, cost }) => {
@@ -37,16 +40,42 @@ const ChatApp = ({
     handleSendMessage,
     handleClearChat,
     messagesEndRef,
+    sendMessageDirect, // Nuevo: función para enviar mensaje directo
   } = useChat({
     onMessageSent,
     onChatCleared,
     customResponses,
     onUsageUpdate: handleUsageUpdate,
-    onError: setError,
+    onError: (err, lastUserMessage) => {
+      setError(err);
+      // Si es rate limit, guardar el último mensaje para reintentar
+      if (
+        typeof err === "string" &&
+        (err.includes("429") || err.toLowerCase().includes("rate limit")) &&
+        lastUserMessage
+      ) {
+        lastMessageRef.current = lastUserMessage;
+      } else {
+        lastMessageRef.current = null;
+      }
+    },
   });
 
   // Manejar cierre de error
-  const handleCloseError = () => setError(null);
+  const handleCloseError = () => {
+    setError(null);
+    setRetrying(false);
+  };
+
+  // Nuevo: reintentar el último mensaje si fue rate limit
+  const handleRetry = async () => {
+    if (!lastMessageRef.current) return;
+    setRetrying(true);
+    setError(null);
+    await sendMessageDirect(lastMessageRef.current);
+    setRetrying(false);
+    lastMessageRef.current = null;
+  };
 
   // Exportar conversación a Markdown
   const handleExportConversation = () => {
@@ -89,7 +118,7 @@ const ChatApp = ({
         onExportConversation={handleExportConversation}
       />
       {/* Banner de error visual */}
-      <ErrorBanner error={error} onClose={handleCloseError} />
+      <ErrorBanner error={error} onClose={handleCloseError} onRetry={lastMessageRef.current ? handleRetry : undefined} />
 
       {/* Token/cost display */}
       <TokenCostDisplay tokens={tokenStats.tokens} cost={tokenStats.cost} />

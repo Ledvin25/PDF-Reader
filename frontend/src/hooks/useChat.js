@@ -14,6 +14,9 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
   // Ref para hacer scroll automático al final de la lista de mensajes
   const messagesEndRef = useRef(null);
 
+  // Nuevo: guardar el último mensaje del usuario para reintentar
+  const lastUserMessageRef = useRef(null);
+
   // Maneja el envío de un mensaje por el usuario
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -27,31 +30,39 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
       sender: SENDER_TYPES.USER,
       timestamp: new Date().toLocaleTimeString(),
     };
-    // Agregar el mensaje del usuario al estado
+    lastUserMessageRef.current = userMessage;
+    await sendMessageDirect(userMessage);
+  };
+
+  // Nuevo: función para enviar mensaje directo (para reintentos)
+  const sendMessageDirect = async (userMessage) => {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
     setIsTyping(true);
     if (onMessageSent) onMessageSent(userMessage);
-
-    // No agregar el mensaje AI vacío aquí
     let aiMessage = null;
     let aiMessageId = Date.now() + "-ai";
-
     try {
-      // Llamada al backend usando fetch (SSE streaming)
       const response = await fetch("http://localhost:3001/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ message: userMessage.text }),
       });
+      // Manejo explícito de error 429 (rate limit)
+      if (response.status === 429) {
+        setIsLoading(false);
+        setIsTyping(false);
+        const errMsg = "429: Has superado el límite de mensajes. Intenta de nuevo en un minuto.";
+        if (onError) onError(errMsg, userMessage);
+        return;
+      }
       if (!response.body) throw new Error("No stream body");
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
       let buffer = "";
       let firstTokenReceived = false;
-      // Leer el stream línea por línea (SSE)
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
@@ -61,9 +72,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
         for (let line of lines) {
           if (line.startsWith("data: ")) {
             const payload = JSON.parse(line.replace("data: ", ""));
-            // Si el backend envía contenido parcial
             if (payload.type === "content") {
-              // Al recibir el primer token, crear el mensaje AI y ocultar el typing
               if (!firstTokenReceived) {
                 aiMessage = {
                   id: aiMessageId,
@@ -88,11 +97,9 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
                   }
                 });
               }
-            // Si el backend indica que terminó
             } else if (payload.type === "done") {
               setIsLoading(false);
               setIsTyping(false);
-            // Si hubo un error en el backend
             } else if (payload.type === "error") {
               aiMessage = {
                 id: aiMessageId,
@@ -101,7 +108,6 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
                 timestamp: new Date().toLocaleTimeString(),
               };
               setMessages((prev) => {
-                // Si ya existe el mensaje AI, reemplazarlo
                 const last = prev[prev.length - 1];
                 if (last && last.id === aiMessage.id) {
                   return [...prev.slice(0, -1), aiMessage];
@@ -111,8 +117,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
               });
               setIsLoading(false);
               setIsTyping(false);
-              if (onError) onError(payload.content);
-            // Si el backend envía usage/costo
+              if (onError) onError(payload.content, userMessage);
             } else if (payload.type === "usage") {
               if (onUsageUpdate) onUsageUpdate({ tokens: payload.tokens, cost: payload.cost });
             }
@@ -120,7 +125,6 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
         }
       }
     } catch (err) {
-      // Si hay error de red o conexión con el backend
       aiMessage = {
         id: aiMessageId,
         text: "[Error de conexión con el backend]",
@@ -137,7 +141,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
       });
       setIsLoading(false);
       setIsTyping(false);
-      if (onError) onError("Error de conexión con el backend");
+      if (onError) onError("Error de conexión con el backend", userMessage);
     }
   };
 
@@ -157,5 +161,6 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
     handleSendMessage,
     handleClearChat,
     messagesEndRef,
+    sendMessageDirect, // Nuevo: exponer función para reintentar
   };
 }

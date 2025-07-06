@@ -7,7 +7,7 @@ const ChatHeader = ({ title, onClearChat, hasMessages, onExportConversation }) =
   const [online, setOnline] = useState(true);
 
   useEffect(() => {
-    // Función para chequear el endpoint /health periódicamente
+    // Solo chequear el endpoint /health una vez al montar
     const checkHealth = async () => {
       try {
         const res = await fetch("http://localhost:3001/health");
@@ -18,8 +18,6 @@ const ChatHeader = ({ title, onClearChat, hasMessages, onExportConversation }) =
       }
     };
     checkHealth();
-    const interval = setInterval(checkHealth, 5000);
-    return () => clearInterval(interval);
   }, []);
 
   // Handler para limpiar la conversación
