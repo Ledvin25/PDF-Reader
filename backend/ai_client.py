@@ -14,7 +14,6 @@ else:
 # Precios por modelo (USD por 1K tokens, ejemplo para GPT-4o-mini)
 MODEL_PRICING = {
     "gpt-4o-mini": {"input": 0.0005, "output": 0.0015},
-    # Agrega otros modelos si es necesario
 }
 
 

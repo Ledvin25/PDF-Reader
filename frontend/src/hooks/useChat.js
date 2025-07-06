@@ -2,7 +2,7 @@ import { useState, useRef } from "react";
 import { SENDER_TYPES, CHAT_CONFIG } from "../constants/chatConstants";
 
 // Hook principal para manejar la lógica del chat AI
-export function useChat({ onMessageSent, onChatCleared, customResponses = null, onUsageUpdate = null }) {
+export function useChat({ onMessageSent, onChatCleared, customResponses = null, onUsageUpdate = null, onError = null }) {
   // Estado para los mensajes del chat
   const [messages, setMessages] = useState([]);
   // Estado para el valor del input de usuario
@@ -111,6 +111,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
               });
               setIsLoading(false);
               setIsTyping(false);
+              if (onError) onError(payload.content);
             // Si el backend envía usage/costo
             } else if (payload.type === "usage") {
               if (onUsageUpdate) onUsageUpdate({ tokens: payload.tokens, cost: payload.cost });
@@ -136,6 +137,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
       });
       setIsLoading(false);
       setIsTyping(false);
+      if (onError) onError("Error de conexión con el backend");
     }
   };
 

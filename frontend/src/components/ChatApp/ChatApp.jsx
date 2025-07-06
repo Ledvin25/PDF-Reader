@@ -4,6 +4,7 @@ import MessagesList from "../MessagesList/MessagesList";
 import ChatInput from "../ChatInput/ChatInput";
 import { useChat } from "../../hooks/useChat";
 import TokenCostDisplay from "../TokenCostDisplay/TokenCostDisplay";
+import ErrorBanner from "../ErrorBanner/ErrorBanner";
 import "./ChatApp.css";
 
 // Componente principal de la app de chat
@@ -16,6 +17,7 @@ const ChatApp = ({
 }) => {
   // Estado local para tokens/costo acumulativo
   const [tokenStats, setTokenStats] = useState({ tokens: 0, cost: 0 });
+  const [error, setError] = useState(null);
 
   // Callback para acumular tokens/costo
   const handleUsageUpdate = ({ tokens, cost }) => {
@@ -40,7 +42,11 @@ const ChatApp = ({
     onChatCleared,
     customResponses,
     onUsageUpdate: handleUsageUpdate,
+    onError: setError,
   });
+
+  // Manejar cierre de error
+  const handleCloseError = () => setError(null);
 
   // Exportar conversación a Markdown
   const handleExportConversation = () => {
@@ -82,8 +88,12 @@ const ChatApp = ({
         hasMessages={messages.length > 0}
         onExportConversation={handleExportConversation}
       />
-      {/* Token/cost display debajo del header */}
+      {/* Banner de error visual */}
+      <ErrorBanner error={error} onClose={handleCloseError} />
+
+      {/* Token/cost display */}
       <TokenCostDisplay tokens={tokenStats.tokens} cost={tokenStats.cost} />
+      
       {/* Lista de mensajes y typing indicator */}
       <MessagesList
         messages={messages}
