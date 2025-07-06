@@ -2,7 +2,13 @@ import { useState, useRef } from "react";
 import { SENDER_TYPES, CHAT_CONFIG } from "../constants/chatConstants";
 
 // Hook principal para manejar la lógica del chat AI
-export function useChat({ onMessageSent, onChatCleared, customResponses = null, onUsageUpdate = null, onError = null }) {
+export function useChat({
+  onMessageSent,
+  onChatCleared,
+  customResponses = null,
+  onUsageUpdate = null,
+  onError = null,
+}) {
   // Estado para los mensajes del chat
   const [messages, setMessages] = useState([]);
   // Estado para el valor del input de usuario
@@ -13,8 +19,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
   const [isTyping, setIsTyping] = useState(false);
   // Ref para hacer scroll automático al final de la lista de mensajes
   const messagesEndRef = useRef(null);
-
-  // Nuevo: guardar el último mensaje del usuario para reintentar
+  // Ref para guardar el último mensaje del usuario (para reintentos)
   const lastUserMessageRef = useRef(null);
 
   // Maneja el envío de un mensaje por el usuario
@@ -34,7 +39,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
     await sendMessageDirect(userMessage);
   };
 
-  // Nuevo: función para enviar mensaje directo (para reintentos)
+  // Función para enviar mensaje directo (para reintentos)
   const sendMessageDirect = async (userMessage) => {
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
@@ -44,6 +49,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
     let aiMessage = null;
     let aiMessageId = Date.now() + "-ai";
     try {
+      // Llamada al backend usando fetch (SSE streaming)
       const response = await fetch("http://localhost:3001/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,7 +59,8 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
       if (response.status === 429) {
         setIsLoading(false);
         setIsTyping(false);
-        const errMsg = "429: Has superado el límite de mensajes. Intenta de nuevo en un minuto.";
+        const errMsg =
+          "429: Has superado el límite de mensajes. Intenta de nuevo en un minuto.";
         if (onError) onError(errMsg, userMessage);
         return;
       }
@@ -63,6 +70,7 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
       let done = false;
       let buffer = "";
       let firstTokenReceived = false;
+      // Leer el stream línea por línea (SSE)
       while (!done) {
         const { value, done: doneReading } = await reader.read();
         done = doneReading;
@@ -72,7 +80,9 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
         for (let line of lines) {
           if (line.startsWith("data: ")) {
             const payload = JSON.parse(line.replace("data: ", ""));
+            // Si el backend envía contenido parcial
             if (payload.type === "content") {
+              // Al recibir el primer token, crear el mensaje AI y ocultar el typing
               if (!firstTokenReceived) {
                 aiMessage = {
                   id: aiMessageId,
@@ -97,9 +107,11 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
                   }
                 });
               }
+              // Si el backend indica que terminó
             } else if (payload.type === "done") {
               setIsLoading(false);
               setIsTyping(false);
+              // Si hubo un error en el backend
             } else if (payload.type === "error") {
               aiMessage = {
                 id: aiMessageId,
@@ -118,13 +130,16 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
               setIsLoading(false);
               setIsTyping(false);
               if (onError) onError(payload.content, userMessage);
+              // Si el backend envía usage/costo
             } else if (payload.type === "usage") {
-              if (onUsageUpdate) onUsageUpdate({ tokens: payload.tokens, cost: payload.cost });
+              if (onUsageUpdate)
+                onUsageUpdate({ tokens: payload.tokens, cost: payload.cost });
             }
           }
         }
       }
     } catch (err) {
+      // Si hay error de red o conexión con el backend
       aiMessage = {
         id: aiMessageId,
         text: "[Error de conexión con el backend]",
@@ -161,6 +176,6 @@ export function useChat({ onMessageSent, onChatCleared, customResponses = null, 
     handleSendMessage,
     handleClearChat,
     messagesEndRef,
-    sendMessageDirect, // Nuevo: exponer función para reintentar
+    sendMessageDirect, // Exponer función para reintentar
   };
 }
