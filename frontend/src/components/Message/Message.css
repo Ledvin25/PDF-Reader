@@ -110,3 +110,114 @@
     color: #000;
   }
 }
+
+.message-text h1 {
+  font-size: 1.5em;
+  font-weight: bold;
+  margin: 0.7em 0 0.4em 0;
+}
+.message-text h2 {
+  font-size: 1.25em;
+  font-weight: bold;
+  margin: 0.6em 0 0.3em 0;
+}
+.message-text h3 {
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: 0.5em 0 0.2em 0;
+}
+.message-text h4,
+.message-text h5,
+.message-text h6 {
+  font-size: 1em;
+  font-weight: bold;
+  margin: 0.4em 0 0.2em 0;
+}
+.message-text ul,
+.message-text ol {
+  margin: 0.5em 0 0.5em 1.5em;
+  padding-left: 1.5em;
+}
+.message-text li {
+  margin-bottom: 0.2em;
+}
+.message-text code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.95em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+}
+.message-text pre {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 0.7em 1em;
+  overflow-x: auto;
+  font-size: 0.97em;
+  margin: 0.7em 0;
+}
+.message-text a {
+  color: #22c55e;
+  text-decoration: underline;
+}
+.message-text strong {
+  font-weight: bold;
+}
+.message-text em {
+  font-style: italic;
+}
+.markdown-body h1 {
+  font-size: 1.7em;
+  font-weight: bold;
+  margin: 0.7em 0 0.4em 0;
+}
+.markdown-body h2 {
+  font-size: 1.4em;
+  font-weight: bold;
+  margin: 0.6em 0 0.3em 0;
+}
+.markdown-body h3 {
+  font-size: 1.15em;
+  font-weight: bold;
+  margin: 0.5em 0 0.2em 0;
+}
+.markdown-body h4,
+.markdown-body h5,
+.markdown-body h6 {
+  font-size: 1em;
+  font-weight: bold;
+  margin: 0.4em 0 0.2em 0;
+}
+.markdown-body strong {
+  font-weight: bold;
+}
+.markdown-body em {
+  font-style: italic;
+}
+.markdown-body ul,
+.markdown-body ol {
+  margin: 0.5em 0 0.5em 1.5em;
+  padding-left: 1.5em;
+}
+.markdown-body li {
+  margin-bottom: 0.2em;
+}
+.markdown-body code {
+  background: #f3f4f6;
+  border-radius: 4px;
+  padding: 0.1em 0.4em;
+  font-size: 0.95em;
+  font-family: 'Fira Mono', 'Consolas', monospace;
+}
+.markdown-body pre {
+  background: #f3f4f6;
+  border-radius: 6px;
+  padding: 0.7em 1em;
+  overflow-x: auto;
+  font-size: 0.97em;
+  margin: 0.7em 0;
+}
+.markdown-body a {
+  color: #22c55e;
+  text-decoration: underline;
+}

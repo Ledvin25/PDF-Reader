@@ -1,5 +1,7 @@
 import React from "react";
 import { SENDER_TYPES } from "../../constants/chatConstants";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import "./Message.css";
 
 // Componente para renderizar un mensaje individual (usuario o AI)
@@ -22,7 +24,13 @@ const Message = ({ message }) => {
       <div className="message-avatar">{isUser ? "👤" : "🤖"}</div>
       <div className="message-content">
         {/* Texto del mensaje */}
-        <div className="message-text">{text}</div>
+        <div className="message-text">
+          {isAI ? (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>{text}</ReactMarkdown>
+          ) : (
+            text
+          )}
+        </div>
         {/* Timestamp solo hora:minutos */}
         <div className="message-timestamp">{timeOnly}</div>
       </div>
