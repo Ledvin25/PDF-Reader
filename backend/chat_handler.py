@@ -18,8 +18,12 @@ async def chat_stream(request: ChatRequest):
     def event_generator():
         try:
             for token in stream_chat(prompt):
-                payload = {"type": "content", "content": token}
-                yield f"data: {json.dumps(payload)}\n\n"
+                if isinstance(token, dict) and token.get("type") == "usage":
+                    payload = {"type": "usage", "tokens": token["tokens"], "cost": token["cost"]}
+                    yield f"data: {json.dumps(payload)}\n\n"
+                else:
+                    payload = {"type": "content", "content": token}
+                    yield f"data: {json.dumps(payload)}\n\n"
             done = {"type": "done", "content": None}
             yield f"data: {json.dumps(done)}\n\n"
         except Exception as e:

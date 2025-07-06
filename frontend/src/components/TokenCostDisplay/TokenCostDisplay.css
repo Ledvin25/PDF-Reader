@@ -1,0 +1,12 @@
+.token-cost-display {
+  font-size: 0.95rem;
+  color: #1a7f37;
+  background: #e6f9ed;
+  border-radius: 8px;
+  padding: 4px 12px;
+  margin: 0 1rem;
+  display: inline-block;
+}
+.token-cost-display strong {
+  color: #0e5c2c;
+}
