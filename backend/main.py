@@ -69,6 +69,9 @@ async def health():
     else:
         details["openai"] = "OPENAI_API_KEY presente."
 
+    api_base_url = os.getenv("API_BASE_URL", "No configurado")
+    details["api_base_url"] = api_base_url
+
     code = status.HTTP_200_OK if status_val == "ok" else status.HTTP_503_SERVICE_UNAVAILABLE
 
     return JSONResponse(status_code=code, content={"status": status_val, "details": details})

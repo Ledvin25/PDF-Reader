@@ -10,6 +10,7 @@ const ChatHeader = ({ title, onClearChat, hasMessages, onExportConversation }) =
     // Solo chequear el endpoint /health una vez al montar
     const checkHealth = async () => {
       try {
+        console.log(`VITE_API_BASE_URL configurada: ${import.meta.env.VITE_API_BASE_URL}`);
         const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/health`);
         const data = await res.json();
         setOnline(data.status === "ok");
