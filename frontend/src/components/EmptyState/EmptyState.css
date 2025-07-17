@@ -23,3 +23,21 @@
   max-width: 400px;
   line-height: 1.6;
 }
+
+.download-button {
+  background: #f3f4f6;
+  color: #16a34a;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.7rem;
+  margin-right: 0.5rem;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+  display: inline-flex;
+  align-items: center;
+}
+
+.download-button:hover {
+  background: #bbf7d0;
+  color: #0e5c2c;
+}
