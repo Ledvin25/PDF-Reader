@@ -15,7 +15,8 @@ frontend_origins = [
     "http://localhost:8080",
     "http://localhost",
     "http://127.0.0.1:8080",
-    "http://127.0.0.1"
+    "http://127.0.0.1",
+    "https://pdf-reader-weld.vercel.app"  # Dominio del frontend desplegado
 ]
 
 extra_origins = os.getenv("FRONTEND_ORIGINS")
